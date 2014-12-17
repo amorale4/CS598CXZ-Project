@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>
+	Structured Reviews
+	</title>
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="/static/css/index.css">
+</head>
+
+<body>
+<h1>
+	Original Reviews
+</h1>
+{% if reviews %}
+	<div class="review-list" style="text-align:center;">
+	{% for item in reviews%}
+		<ul class="list-group">
+  			<li class="list-group-item">{{item}}</li>
+		</ul>
+	{% endfor%}
+	</div>
+{% endif %}
+
+</body>
+</html>

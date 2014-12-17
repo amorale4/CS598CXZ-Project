@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>
+	Structured Reviews
+	</title>
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="/static/css/index.css">
+</head>
+
+<body>
+
+<h1>Product Review Organizer</h1>
+<form role="form" method="post" action="/search" name="searchform">
+	<span>
+	<input NAME="keywords" type="text" class="form-control" placeholder="Search your review here">
+	
+	<button type="submit" class="btn btn-default">search</button>
+	</span>
+</form>
+
+{% if results %}
+	<div class="tags" style="text-align:center;">
+	{% for key, value in results.iteritems()%}
+		<button id="showHide-{{key}}" type="button" class="btn btn-info">{{key}}</button>
+				<script>
+					document.getElementById("showHide-{{key}}").onclick = function() {
+					    var theDiv = document.getElementById("foo-{{key}}");
+					    if(theDiv.style.display == 'none') {
+					        theDiv.style.display = 'block';
+					        this.innerHTML = "{{key}}";
+					    } else {
+					        theDiv.style.display = 'none';
+					        this.innerHTML = "{{key}}";
+					    }
+					}
+		</script>
+	{% endfor %}
+	{% for key, value in results.iteritems()%}
+		<div id="foo-{{key}}" style="display:none">
+			{% for (score, (index, sentence)) in value%}
+			<ul class="list-group">
+  				<li class="list-group-item"><a href="/sentence/{{index}}">{{sentence}}</a></li>
+			</ul>
+			{% endfor %}
+		</div>
+	{% endfor %}
+
+	</div>
+{% endif %}
+</body>
+</html>
