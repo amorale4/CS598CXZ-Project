@@ -2,35 +2,34 @@
 import random
 import numpy as np
 location_to_word = {}
-def generate_dict(filename):
+def generate_dict(fileobj):
 	
 	d = {}
 	word_cnt = {}
 	location = 0;
 	sentence_lst = []
-	with open(filename) as fileobj:
-		for line in fileobj:
-			if len(line[:len(line)-1]) > 0:
-				lst = []
-				words = line[:len(line)-1].split()
-				review_id = words[0]
-				for word in words[1:]:
-					try:
-						word_cnt[word] += 1
+	for line in fileobj:
+		if len(line[:len(line)-1]) > 0:
+			lst = []
+			words = line[:len(line)-1].split()
+			review_id = words[0]
+			for word in words[1:]:
+				try:
+					word_cnt[word] += 1
+	
+				except KeyError:
+					word_cnt[word] = 1
 		
-					except KeyError:
-						word_cnt[word] = 1
-			
-					if word not in d:
-						d[word] = location
-						location_to_word[location] = word
-						location += 1
+				if word not in d:
+					d[word] = location
+					location_to_word[location] = word
+					location += 1
 
-				for word in list(set(words[1:])):
-					lst.append((d[word], word_cnt[word]))	
-				lst.sort(key=lambda tup: tup[0])
-				lst.insert(0, words[0])
-				sentence_lst.append(lst)		
+			for word in list(set(words[1:])):
+				lst.append((d[word], word_cnt[word]))	
+			lst.sort(key=lambda tup: tup[0])
+			lst.insert(0, words[0])
+			sentence_lst.append(lst)		
 	#print sentence_lst			
 	return sentence_lst
 
@@ -168,7 +167,7 @@ def simple_tag_generation(lst):
 '''def get_original_sentence(location):'''
 	
 		
-def main_func():
+def main_func(filename):
 	'''lst = [
 	[1, (1, 1), (2, 1)],
 	[1, (1, 2), (2, 2)],
@@ -178,7 +177,7 @@ def main_func():
 	[2, (1, 6), (2, 7)],
 	]'''
 	#getNearestPoint([-1, (4,3)], [[0, (4,3)], [0, (4,2)]])
-	lst = generate_dict('pmi_input_sentences_full.txt')
+	lst = generate_dict(filename)
 	#print location_to_word
 	(mu, clusters) = k_means(lst, 5)
 	#print clusters
