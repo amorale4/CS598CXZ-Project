@@ -21,7 +21,7 @@ search.close() is currently commented out because it causes a stack overflow in
 some cases.
 """
 
-INDEX_DIR = "test-index-result"
+INDEX_DIR = "data/product-summary-index"
 lucene.initVM(vmargs=['-Djava.awt.headless=true'])
 print 'lucene', lucene.VERSION
 base_dir = os.path.abspath(".")
