@@ -162,7 +162,7 @@ def simple_tag_generation(lst):
 		if cnt > max_cnt:
 			max_w = word
 			max_cnt = cnt
-	print max_w, max_cnt
+	#print max_w, max_cnt
 	return max_w
 
 '''def get_original_sentence(location):'''
@@ -184,6 +184,7 @@ def main_func():
 	#print clusters
 	#results = []
 	#print len(mu)
+	tags = []
 	for key, val in clusters.iteritems():
 		results = []
 		for p in val:
@@ -193,7 +194,8 @@ def main_func():
 			#temp += str(p[0])
 			results.append(temp[:-1])
 	
-		simple_tag_generation(results)
+		tags.append(simple_tag_generation(results))
+	return tags
 	
 
 	#d = getDistance([0, (0,1),(2, 2), (3, 5)], [1, (1, 1), (2, 4), (4,1), (5, 1)])
