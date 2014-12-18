@@ -83,8 +83,11 @@ class IndexFiles(object):
                     doc = Document()
                     doc.add(Field("name", filename, t1))
                     doc.add(Field("path", root, t1))
+		    # We use the product name for now. 
+		    product_title = contents.split(",")[0]
                     if len(contents) > 0:
-                        doc.add(Field("contents", contents, t2))
+                        #doc.add(Field("contents", contents, t2))
+                        doc.add(Field("contents", product_title, t2))
                     else:
                         print "warning: no content in %s" % filename
                     writer.addDocument(doc)

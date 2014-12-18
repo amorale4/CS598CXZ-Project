@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-INDEX_DIR = "IndexFiles.index"
 
 import sys, os, lucene
 
@@ -21,6 +20,17 @@ search query entered against the 'contents' field.  It will then display the
 search.close() is currently commented out because it causes a stack overflow in
 some cases.
 """
+
+INDEX_DIR = "data/product-summary-index"
+lucene.initVM(vmargs=['-Djava.awt.headless=true'])
+print 'lucene', lucene.VERSION
+base_dir = os.path.abspath(".")
+print os.path.join(base_dir,INDEX_DIR)
+directory = SimpleFSDirectory(File(os.path.join(base_dir, INDEX_DIR)))
+searcher = IndexSearcher(DirectoryReader.open(directory))
+analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
+
+
 def run(searcher, analyzer):
     while True:
         print
@@ -40,6 +50,21 @@ def run(searcher, analyzer):
             doc = searcher.doc(scoreDoc.doc)
             print 'path:', doc.get("path"), 'name:', doc.get("name")
 
+# def setupSearch(pathToIndex):
+# run(searcher, analyzer)
+# del searcher
+
+def queryIndex(command, topK):	
+        query = QueryParser(Version.LUCENE_CURRENT, "contents", analyzer).parse(command)
+        scoreDocs = searcher.search(query, topK).scoreDocs
+        print "%s total matching documents." % len(scoreDocs)
+	ret = []
+        for scoreDoc in scoreDocs:
+            doc = searcher.doc(scoreDoc.doc)
+            print 'path:', doc.get("path"), 'name:', doc.get("name")
+            ret.append(doc.get("name"))
+
+	return ret	
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
