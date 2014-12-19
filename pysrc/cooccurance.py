@@ -143,6 +143,51 @@ def query_pmi(cooccurances, probs, query, K):
 	#return sorted_MI[0:K]
 	return tags
 
+def bigram_pmi(cooccurances, probs, query_pairs):
+	mutual_info = {} #results
+	for temp in query_pairs:
+		#print "temp, " , temp
+		N_AB = max(cooccurances.get(temp, 0 ), cooccurances.get((temp[1],temp[0],0)))
+		#print "N_AB: ",  N_AB
+		N_A =  probs.get(temp[0], 0)
+		N_B = probs.get(temp[1], 0)
+		#print "N_A: ", temp[0], " ", N_A
+		#print "N_B: ", temp[1], " ", N_B
+		if N_AB < 1:
+			continue
+		#p(x=1, y=1)
+		p_11 =  (N_AB + 0.25) / (1.0*(1+N))
+		#p(x=1,y=0)
+		p_10 = (N_A - N_AB + 0.25) / (1.0*(1+N))
+		#p(x=0,y=1)
+		p_01 = (N_B - N_AB + 0.25) / (1.0*(1+N))
+		#p(x=0,y=0)
+		p_00 = (N - N_A - N_B + N_AB + 0.25) / (1.0*(1+N))
+		#p(x=1)
+		p_x = (N_A + 0.5) / (1.0*(1+N))
+		#p(y=1)
+		p_y = (N_B + 0.5) / (1.0*(1+N))
+		m_xy = p_11*log( p_11/(p_x*p_y) , 2) + p_10 * log( p_10/(p_x*(1-p_y)),2) + p_01*log(p_01/((1-p_x)*p_y),2) + p_00*log(p_00/((1-p_x)*(1-p_y)),2)
+		mutual_info[temp] = m_xy
+
+	sorted_x = sorted(mutual_info.items(), key=operator.itemgetter(1), reverse=True)
+	return sorted_x
+	'''
+	sorted_MI = sorted(mutual_info.iteritems(), key=operator.itemgetter(1), reverse=True)
+	#print sorted_MI[0:10]
+	tags = []
+	for item in sorted_MI[0:K]:
+		#print item
+		temp1 =  item[0]
+		if  temp1[0] == query:
+			tags.append(temp1[1])
+		else:
+			tags.append(temp1[0])
+
+	#return sorted_MI[0:K]
+	return tags
+	'''
+
 def load_cooccurence(cooccurenceFile, probFile):
 	print "loading co-occurence table"
 	cooccurence = cPickle.load( open( cooccurenceFile, "rb" ) )
