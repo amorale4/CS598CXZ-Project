@@ -1,5 +1,5 @@
 '''take in sentences, output vector representation of reviews'''
-import random
+import random, math
 import numpy as np
 import filter_reviews as fr
 
@@ -46,7 +46,7 @@ def cluster_points(X, mu):
 		min_idx = 0
 		cnt = 0
 		for m in mu:
-			d = getDistance(x,m)
+			d = getDistanceL1(x,m)
 			if cnt == 0:
 				min_d = d
 			elif d < min_d:
@@ -91,6 +91,35 @@ def getDistance(l1, l2):
 		cur2 += 1
 	return s
 
+def getDistanceL1(l1, l2):
+	(x1, w1) = l1[1]
+	(x2, w2) = l2[1]
+	cur1 = 1
+	cur2 = 1
+	s = 0
+	while cur1 < len(l1) and cur2 < len(l2):
+		x1 = l1[cur1][0]
+		x2 = l2[cur2][0]
+		if x1 < x2:
+			s += l1[cur1][1]
+			cur1 += 1
+					
+		elif x1 == x2:
+			s += math.fabs(l1[cur1][1]-l2[cur2][1])
+			cur1 += 1
+			cur2 += 1
+		else:
+			s += l2[cur2][1]
+			cur2 += 1
+			
+	while cur1 < len(l1):
+		s += l1[cur1][1]
+		cur1 += 1
+	while cur2 < len(l2):
+		s += l2[cur2][1]
+		cur2 += 1
+	return int(s)
+
 def reevaluate_centers(mu, clusters):
     newmu = []
     for val in clusters.values():
@@ -121,7 +150,7 @@ def getNearestPoint(center, lst):
 	min_p = center
 	min_d = 0
 	for p in lst:
-		d = getDistance(center, p)
+		d = getDistanceL1(center, p)
 		if cnt == 0 or d < min_d:
 			min_d = d
 			min_p = p
@@ -181,7 +210,6 @@ def simple_tag_generation(lst):
 			max_cnt = cnt
 	#print max_w, max_cnt
 	return max_w
-
 		
 def main_func(filename, sentence_lst):
 	'''lst = [
@@ -220,6 +248,10 @@ def main_func(filename, sentence_lst):
 			except KeyError:
 				tag_to_sentence[tag] = [(ids[0], s)]
 			#find_original_sentence()
+	for tag, sentences in tag_to_sentence.iteritems():
+		print "TAG="+tag
+		for s in sentences:
+			print s
 	return tag_to_sentence
 
 def get_review(rid, filename):
@@ -236,7 +268,14 @@ def get_review(rid, filename):
 	#print d
 	#getMean([[0, (0,1),(2, 2), (5, 5)], [1, (1, 1), (2, 4), (4,1), (5, 1)], [2,(2,6), (4,2)]])
 if __name__ == "__main__":
-	#sentence_lst = fr.generate_sentence("../testIndex/B0006DPVUU.txt")
-	#print sentence_lst
 	retval = fr.filter_contents("data/products/B000SNC70U.txt")
 	main_func(retval[1], retval[0])
+
+
+
+
+
+
+
+
+
