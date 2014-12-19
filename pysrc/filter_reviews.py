@@ -51,6 +51,7 @@ def filter_contents(filename):
 	punctuation = set(['.',',','?','!','\'','\"','`','``','*','-','/','+'])
 	tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')			
 	tokenizer2 = RegexpTokenizer(r'(\w|\')+')
+	origin_lines = []
 	with open(filename, 'r') as fileobj:
 		for review_line in fileobj:
 			review = ",".join(review_line.split(",")[5:]).strip()
@@ -59,17 +60,21 @@ def filter_contents(filename):
 			lines = tokenizer.tokenize(review.lower())
 			#print len(lines)
 			for line in lines:
+				
 				#tokens = nltk.wordpunct_tokenize(line)
 				tokens = tokenizer2.tokenize(line.strip())
 				stemmer = PorterStemmer()
 				clean_line = [stemmer.stem(token) for token in tokens if token not in stop_lst and token not in punctuation and token.isalpha()]
 				if len(clean_line) > 2 :
+					origin_lines.append(line)
 					clean_lines.append(str(i) + " " + " ".join(clean_line) + '\n')	
 			i = i + 1
 	
 	#f.writelines(clean_lines)
-	print clean_lines
-	return clean_lines
+	#print clean_lines
+	#print "STRIPED"
+	#print clean_lines
+	return (origin_lines, clean_lines)
 def generate_sentence(filename):
 	#open("data/contents/contents.dat","r")
 	#f = open('pmi_input_sentences_full.txt', 'w')
@@ -89,7 +94,8 @@ def generate_sentence(filename):
 			i = i + 1
 	
 	#f.writelines(clean_lines)
-	print clean_lines
+	#print "SENTENCES"
+	#print clean_lines
 	return clean_lines
 	
 def inverted_index():
@@ -363,7 +369,9 @@ def get_similarity(tag_dist, sentence):
 	return score
 	
 def main_func():
-	f = open(PathToContents)
+	generate_sentence("testIndex/B0006DPVUU.txt")
+	filter_contents("testIndex/B0006DPVUU.txt")
+	'''f = open(PathToContents)
 	lines = f.readlines()
 	print "opening index"
 	index_file = cPickle.load(open("iindex.p", "rb")) 
@@ -387,7 +395,7 @@ def main_func():
 	#tag_lst = get_mutual_info(query)
 	
 	#print lst
-	'''query = ['call']
+	query = ['call']
 	lst = get_mutual_info(query)
 	
 	print lst'''
