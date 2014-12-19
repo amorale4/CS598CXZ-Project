@@ -21,7 +21,7 @@ search.close() is currently commented out because it causes a stack overflow in
 some cases.
 """
 
-INDEX_DIR = "data/product-summary-index"
+INDEX_DIR = "data/product-index"
 lucene.initVM(vmargs=['-Djava.awt.headless=true'])
 print 'lucene', lucene.VERSION
 base_dir = os.path.abspath(".")
@@ -67,18 +67,18 @@ def queryIndex(command, topK):
 	return ret	
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-	print "usage: SearchFiles <pathToIndex>"
+    if len(sys.argv) < 1:
+	print "usage: SearchFiles \nNote that you need to set the INDEX_DIR to your correct index directory."
 	sys.exit(1)
-    INDEX_DIR = sys.argv[1]
-    lucene.initVM(vmargs=['-Djava.awt.headless=true'])
-    print 'lucene', lucene.VERSION
+    #INDEX_DIR = sys.argv[1]
+    #lucene.initVM(vmargs=['-Djava.awt.headless=true'])
+    #print 'lucene', lucene.VERSION
     #base_dir = os.path.dirname(os.path.abspath("."))
-    base_dir = os.path.abspath(".")
-    print base_dir
-    directory = SimpleFSDirectory(File(os.path.join(base_dir, INDEX_DIR)))
+    #base_dir = os.path.abspath(".")
+    #print base_dir
+    #directory = SimpleFSDirectory(File(os.path.join(base_dir, INDEX_DIR)))
     #directory = SimpleFSDirectory(File(INDEX_DIR))
-    searcher = IndexSearcher(DirectoryReader.open(directory))
-    analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
+    #searcher = IndexSearcher(DirectoryReader.open(directory))
+    #analyzer = StandardAnalyzer(Version.LUCENE_CURRENT)
     run(searcher, analyzer)
     del searcher
