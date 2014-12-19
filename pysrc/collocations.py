@@ -36,13 +36,14 @@ def gen_summary(clean_lines, original_lines, topK):
 	# once we have a ranked list of bigrams these will become our tags.
 	print "top bigrams: " , pmi_bigrams
 	print "num bigrams: " , len(pmi_bigrams)
+	print "clean_lines: ", clean_lines
 	# for each tag
 	#    we then look at all the sentences which contain this tag	
 	#    find the top 3 sentences which are most similar to all other sentences
 
 	#tag to sentence dictionary
 	tag_sent = {}
-	
+	already_used_sents = []	
 	for ( (word1, word2), score ) in pmi_bigrams:
 		indecies_of_curr_tag = []
 		sents_of_curr_tag = []	
@@ -54,14 +55,19 @@ def gen_summary(clean_lines, original_lines, topK):
 				if (original_tag == ""):
 					#find the tag
 					original_tag = find_tag(word1, word2, original_lines[i])
-		
-		best_sents_indices = top_sentences(indecies_of_curr_tag, clean_lines)
+	
+		# quick hack would be to save the sentences that are already seened
+		# but this does not solve the problem of choosing good sentences	
+		best_sents_indices = top_sentences(indecies_of_curr_tag, clean_lines, already_used_sents)
+		already_used_sents = already_used_sents + best_sents_indices
 		for index in best_sents_indices:
 			revNum = clean_lines[index].split()[0].encode('ascii','ignore')
+			print "adding revNum: ", revNum
+			print "original line[index]:", original_lines[index]
 			sents_of_curr_tag.append( ( revNum, original_lines[index] ) )
 
 		#need to find the phrase which corresponds to the tag
-		tag_sent[original_tag] = sents_of_curr_tag
+		tag_sent[original_tag] = list(set(sents_of_curr_tag))
 
 	#TODO: here its possible that we return sentences from the same view as the best sentences so we 
 	#      need to make sure that we only return the sentences from the differnt reviews.
@@ -77,7 +83,7 @@ def gen_summary(clean_lines, original_lines, topK):
 # for all the sentences find the ones that are the closest to all the other sentences
 # assumming indices is non-empty
 # returns a list of indices to the topK sentences with the closest to all the other sentences
-def top_sentences(indices, sentences):
+def top_sentences(indices, sentences, already_used = []):
 	topK = 3
 	if indices < 2:#require atlest 2 sentences
 		return [indeces[0]]
@@ -93,12 +99,22 @@ def top_sentences(indices, sentences):
 				total_similarities[index2] = total_similarities.get(index2,0) + curr_sim
 		
 	#from all of the similarities return the best one
-	ret_sorted = sorted(total_similarities.iteritems(), key=operator.itemgetter(1), reverse=True)
-	ret_sorted = ret_sorted[:topK]
+	ret_sorted_dic = sorted(total_similarities.iteritems(), key=operator.itemgetter(1), reverse=True)
+	ret_sorted = ret_sorted_dic[:topK]
 
-	print "ret_sorted: ", ret_sorted
-	print "total_similarities: ", total_similarities
-	result = [ index for (index,score) in ret_sorted]
+	result = []
+	if len(already_used) > 0:
+		left_to_return = topK
+		for (index,score) in ret_sorted_dic:
+			if not index in already_used:
+				result.append(i)
+				left_to_return = left_to_return - 1
+			if left_to_return < 1:
+				break
+				
+	else:
+		result = [ index for (index,score) in ret_sorted ]
+
 	return result
 
 #cosine similarity

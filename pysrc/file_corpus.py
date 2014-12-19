@@ -12,6 +12,9 @@ import sys
 #review/time: 1072915200
 #review/summary: Great charger
 #review/text:
+# this controlls the a lower bound to the number of reviews saved
+# all the reviews must contain MIN_REVS < number of reviews
+MIN_REVS=1
 def main(args):
 	print args
 
@@ -35,7 +38,7 @@ def main(args):
 		i = 0
 		for line in f:
 			#if i > 1000: break
-			#i = i+1
+			i = i+1
 			if len(line) > 0 and line[:pr_len]== productRef:
 				product = line[pr_len:].strip()
 				if product == current_product:
@@ -45,13 +48,19 @@ def main(args):
 						product_meta = []
 					
 				else:
-					if len(current_product_list) > 0:
-						if( len(product_meta) > 0):
-							current_product_list.append(",".join(product_meta) + "\n")
-							product_meta = []
-						
+					if( len(product_meta) > 0):
+						current_product_list.append(",".join(product_meta) + "\n")
+						product_meta = []
+					
+					if len(current_product_list) > 1:	
 						with open(args[1] + current_product + ".txt", 'w') as output:
 							output.writelines(current_product_list)
+
+					if len(product_meta) > 0:
+						print "i: ", i
+						print "current_product: ", current_product
+						print "product: ", product
+						break
 
 					current_product = product
 					if not current_product in product_list:
