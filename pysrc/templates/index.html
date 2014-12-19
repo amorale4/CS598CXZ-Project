@@ -19,11 +19,20 @@
 	<button type="submit" class="btn btn-default">search</button>
 	</span>
 </form>
-
+{% if product %}
+	{% for r, p in product.iteritems() %}
+		<button type="button" class="btn btn-info"><a href="/product/{{r}}/{{p}}">{{p}}</a></button>
+	{% endfor %}
+{% endif %}
+{% if name %}
+	<h2 class="p_name" style="color:blue;clear:both;text-align:center">Relevant results for {{name}}</h2>
+{% endif %}
+{% if file_path %}
 {% if results %}
 	<div class="tags" style="text-align:center;">
 	{% for key, value in results.iteritems()%}
 		<button id="showHide-{{key}}" type="button" class="btn btn-info">{{key}}</button>
+		
 				<script>
 					document.getElementById("showHide-{{key}}").onclick = function() {
 					    var theDiv = document.getElementById("foo-{{key}}");
@@ -39,15 +48,16 @@
 	{% endfor %}
 	{% for key, value in results.iteritems()%}
 		<div id="foo-{{key}}" style="display:none">
-			{% for (score, (index, sentence)) in value%}
+			{% for (rid, sentence) in value%}
 			<ul class="list-group">
-  				<li class="list-group-item"><a href="/sentence/{{index}}">{{sentence}}</a></li>
+  				<li class="list-group-item"><a href="/sentence/{{file_path}}/{{rid}}">{{sentence}}</a></li>
 			</ul>
 			{% endfor %}
 		</div>
 	{% endfor %}
 
 	</div>
+{% endif %}
 {% endif %}
 </body>
 </html>

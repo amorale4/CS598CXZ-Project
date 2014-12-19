@@ -4,7 +4,6 @@ import numpy as np
 import filter_reviews as fr
 
 location_to_word = {}
-sentence_lst = []
 def generate_dict(fileobj):
 	
 	d = {}
@@ -14,7 +13,7 @@ def generate_dict(fileobj):
 	sentence_id = 0
 	for line in fileobj:
 		if len(line[:len(line)-1]) > 0:
-			sentence_id += 1
+			
 			lst = []
 			words = line[:len(line)-1].split()
 			review_id = words[0]
@@ -34,8 +33,8 @@ def generate_dict(fileobj):
 				lst.append((d[word], word_cnt[word]))	
 			lst.sort(key=lambda tup: tup[0])
 			lst.insert(0, str(words[0])+"&"+str(sentence_id))
-			sentence_lst.append(lst)		
-	#print sentence_lst			
+			sentence_lst.append(lst)
+			sentence_id += 1				
 	return sentence_lst
 
 def cluster_points(X, mu):
@@ -129,6 +128,18 @@ def getNearestPoint(center, lst):
 		cnt += 1
 	return min_p
 		
+def kNN(center, lst, k):
+	retval = []
+	review_ids = []
+	while k > 0 and len(lst)>0:
+		p = getNearestPoint(center, lst)
+		rid = p[0].split("&")[0]
+		if rid not in review_ids:
+			review_ids.append(rid)
+			retval.append(p[0])
+			k = k-1
+		lst.remove(p)
+	return retval
 	
 def has_converged(mu, oldmu):
 	return (set([tuple(a) for a in mu]) == set([tuple(a) for a in oldmu]))
@@ -139,13 +150,15 @@ def k_means(X, K):
 	clusters = {}
 	oldmu = random.sample(X, K)
 	mu = random.sample(X, K)
+	i = 0
 	while True:
+		i += 1
 		oldmu = mu
 		# Assign all points in X to clusters
 		clusters = cluster_points(X, mu)
 		# Reevaluate centers
 		mu = reevaluate_centers(oldmu, clusters)
-		if has_converged(mu, oldmu):
+		if has_converged(mu, oldmu) or i >= 100:
 			break
 	#print mu
 	#print clusters
@@ -169,12 +182,8 @@ def simple_tag_generation(lst):
 	#print max_w, max_cnt
 	return max_w
 
-'''def get_original_sentence(location):'''
-def get_original_sentence(location):
-	sid = location.split("&")[1]
-	return sentence_lst[int(sid)]	
 		
-def main_func(filename):
+def main_func(filename, sentence_lst):
 	'''lst = [
 	[1, (1, 1), (2, 1)],
 	[1, (1, 2), (2, 2)],
@@ -190,7 +199,7 @@ def main_func(filename):
 	#print clusters
 	#results = []
 	#print len(mu)
-	tags = []
+	tag_to_sentence = {}
 	for key, val in clusters.iteritems():
 		results = []
 		for p in val:
@@ -199,12 +208,26 @@ def main_func(filename):
 				temp = temp + location_to_word[x] + " "
 			#temp += str(p[0])
 			results.append(temp[:-1])
-		best_sentence = getNearestPoint(mu[key], val)
-		print get_original_sentence(best_sentence[0])
+		tag = simple_tag_generation(results)
+		#print "CENTER " + str(key)
+		best_ids = kNN(mu[key], val, 3)
+		for bid in best_ids:
+			ids = bid.split("&")
+			
+			s = sentence_lst[int(ids[1])]	
+			try:
+				tag_to_sentence[tag].append((ids[0], s))
+			except KeyError:
+				tag_to_sentence[tag] = [(ids[0], s)]
 			#find_original_sentence()
-		tags.append(simple_tag_generation(results))
-	return tags
-	
+	return tag_to_sentence
+
+def get_review(rid, filename):
+	f = open(filename)
+	lines = f.readlines()
+	review = ",".join(lines[rid].split(",")[5:])
+	return review
+		
 
 	#d = getDistance([0, (0,1),(2, 2), (3, 5)], [1, (1, 1), (2, 4), (4,1), (5, 1)])
 	#cluster_points([[0, (0,1), (2,2)]], [[0, (1,1), (2, 2)], [0, (0,1), (3,3)]])
@@ -213,6 +236,7 @@ def main_func(filename):
 	#print d
 	#getMean([[0, (0,1),(2, 2), (5, 5)], [1, (1, 1), (2, 4), (4,1), (5, 1)], [2,(2,6), (4,2)]])
 if __name__ == "__main__":
-	sentence_lst = fr.generate_sentence("testIndex/B0006DPVUU.txt")
+	#sentence_lst = fr.generate_sentence("../testIndex/B0006DPVUU.txt")
 	#print sentence_lst
-	main_func(sentence_lst)
+	retval = fr.filter_contents("data/products/B000SNC70U.txt")
+	main_func(retval[1], retval[0])

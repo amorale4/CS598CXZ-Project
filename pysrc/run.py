@@ -5,6 +5,8 @@ from math import log
 import cooccurance as oc
 import filter_reviews as fr
 import SearchFiles
+import k_means as km
+
 app = Flask(__name__)
 
 stemmer = PorterStemmer()
@@ -18,15 +20,18 @@ def search():
 	query = request.form['keywords']
 	topK = 10
 	reviews = SearchFiles.queryIndex(query, topK)
-	results = {}
-	result_list = []
+	#results = {}
+	product = {}
 	basePath = "data/products/"
 	for review in reviews:
 		with open(basePath + review, "r") as f:
-			result_list.append(f.readline().split(",")[0])
+			product[review] = f.readline().split(",")[0]
 
-	print "result list: ", result_list
-	results[query] = result_list	
+	#tagInput = fr.filter_corpus(basePath + review)
+	#tags = pp.main_func(tagInput)
+	#print "result list: ", result_list
+	return render_template('index.html', product = product)
+	#results[query] = result_list	
 	'''keywords = query.split()
 	clean_keywords = []
 	all_tags = []
@@ -55,11 +60,38 @@ def search():
 	'''
 	return render_template('index.html', results = results)
 
-@app.route('/sentence/<path:file_path>')
-def sentence(file_path = None):
-	temp = int(file_path)
-	reviews = [lines[temp]]	
+@app.route('/product/<path:file_path>/<path:name>')
+def product(file_path = None, name = None):
+	basePath = "data/products/"
+	filename = basePath + file_path
+	tagInput = fr.filter_contents(filename)
+	
+	results = km.main_func(tagInput[1], tagInput[0])
+	#print results
+	return render_template('index.html', name = name, file_path = file_path, results = results)
+	#return "OK"
+	'''query = request.form['keywords']
+	topK = 10
+	reviews = SearchFiles.queryIndex(query, topK)
+	product = {}
+	#results = {}
+	basePath = "data/products/"
+	for review in reviews:
+		with open(basePath + review, "r") as f:
+			product[review] = f.readline().split(",")[0]
+	tagInput = fr.filter_corpus(basePath + file_path)
+	results = km.main_func(tagInput)
+	print results
+	return render_template('index.html', product = product)'''
+
+@app.route('/sentence/<path:file_name>/<path:rid>')
+def sentence(file_name = None, rid = None):
+	file_path = "data/products/" + file_name
+	reviews = [km.get_review(int(rid), file_path)]
 	return render_template('keywords.html', reviews = reviews)
+	'''temp = int(file_path)
+	reviews = [lines[temp]]	
+	return render_template('keywords.html', reviews = reviews)'''
 
 if __name__ == '__main__':
 	#app.debug = True
