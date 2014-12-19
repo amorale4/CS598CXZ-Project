@@ -6,6 +6,7 @@ import cooccurance as oc
 import filter_reviews as fr
 import SearchFiles
 import k_means as km
+import collocations as col
 
 app = Flask(__name__)
 
@@ -64,9 +65,9 @@ def search():
 def product(file_path = None, name = None):
 	basePath = "data/products/"
 	filename = basePath + file_path
-	tagInput = fr.filter_contents(filename)
-	
-	results = km.main_func(tagInput[1], tagInput[0])
+	(original_lines, clean_lines) = fr.filter_contents(filename)
+	results = col.gen_summary(clean_lines, original_lines, 5)
+	#results = km.main_func(tagInput[1], tagInput[0])
 	#print results
 	return render_template('index.html', name = name, file_path = file_path, results = results)
 	#return "OK"
