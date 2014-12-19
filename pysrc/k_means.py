@@ -1,15 +1,20 @@
 '''take in sentences, output vector representation of reviews'''
 import random
 import numpy as np
+import filter_reviews as fr
+
 location_to_word = {}
+sentence_lst = []
 def generate_dict(fileobj):
 	
 	d = {}
 	word_cnt = {}
 	location = 0;
 	sentence_lst = []
+	sentence_id = 0
 	for line in fileobj:
 		if len(line[:len(line)-1]) > 0:
+			sentence_id += 1
 			lst = []
 			words = line[:len(line)-1].split()
 			review_id = words[0]
@@ -28,7 +33,7 @@ def generate_dict(fileobj):
 			for word in list(set(words[1:])):
 				lst.append((d[word], word_cnt[word]))	
 			lst.sort(key=lambda tup: tup[0])
-			lst.insert(0, words[0])
+			lst.insert(0, str(words[0])+"&"+str(sentence_id))
 			sentence_lst.append(lst)		
 	#print sentence_lst			
 	return sentence_lst
@@ -165,7 +170,9 @@ def simple_tag_generation(lst):
 	return max_w
 
 '''def get_original_sentence(location):'''
-	
+def get_original_sentence(location):
+	sid = location.split("&")[1]
+	return sentence_lst[int(sid)]	
 		
 def main_func(filename):
 	'''lst = [
@@ -192,7 +199,9 @@ def main_func(filename):
 				temp = temp + location_to_word[x] + " "
 			#temp += str(p[0])
 			results.append(temp[:-1])
-	
+		best_sentence = getNearestPoint(mu[key], val)
+		print get_original_sentence(best_sentence[0])
+			#find_original_sentence()
 		tags.append(simple_tag_generation(results))
 	return tags
 	
@@ -204,4 +213,6 @@ def main_func(filename):
 	#print d
 	#getMean([[0, (0,1),(2, 2), (5, 5)], [1, (1, 1), (2, 4), (4,1), (5, 1)], [2,(2,6), (4,2)]])
 if __name__ == "__main__":
-	main_func()
+	sentence_lst = fr.generate_sentence("testIndex/B0006DPVUU.txt")
+	#print sentence_lst
+	main_func(sentence_lst)

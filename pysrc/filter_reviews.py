@@ -42,17 +42,18 @@ def filter_reviews():
 				i = i + 1
 	f.writelines(clean_lines)
 
-def filter_contents():
+def filter_contents(filename):
 	#open("data/contents/contents.dat","r")
-	f = open('pmi_input_sentences_full.txt', 'w')
+	#f = open('pmi_input_sentences_full.txt', 'w')
 	clean_lines = []
 	i = 0
-	#stop_lst = set(get_stop_lst())
+	stop_lst = set(get_stop_lst())
 	punctuation = set(['.',',','?','!','\'','\"','`','``','*','-','/','+'])
 	tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')			
 	tokenizer2 = RegexpTokenizer(r'(\w|\')+')
-	with open("data/contents/contents.dat", 'r') as fileobj:
-		for review in fileobj:
+	with open(filename, 'r') as fileobj:
+		for review_line in fileobj:
+			review = ",".join(review_line.split(",")[5:]).strip()
 			if i % 10000 == 0:
 				print i
 			lines = tokenizer.tokenize(review.lower())
@@ -63,11 +64,34 @@ def filter_contents():
 				stemmer = PorterStemmer()
 				clean_line = [stemmer.stem(token) for token in tokens if token not in stop_lst and token not in punctuation and token.isalpha()]
 				if len(clean_line) > 2 :
-					clean_lines.append(" ".join(clean_line) + '\n')	
+					clean_lines.append(str(i) + " " + " ".join(clean_line) + '\n')	
 			i = i + 1
-
-	f.writelines(clean_lines)
-
+	
+	#f.writelines(clean_lines)
+	print clean_lines
+	return clean_lines
+def generate_sentence(filename):
+	#open("data/contents/contents.dat","r")
+	#f = open('pmi_input_sentences_full.txt', 'w')
+	clean_lines = []
+	i = 0
+	tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')			
+	with open(filename, 'r') as fileobj:
+		for review_line in fileobj:
+			review = ",".join(review_line.split(",")[5:]).strip()
+			if i % 10000 == 0:
+				print i
+			lines = tokenizer.tokenize(review.lower())
+			#print len(lines)
+			for line in lines:
+				line = str(i) + " " + line
+				clean_lines.append(line)
+			i = i + 1
+	
+	#f.writelines(clean_lines)
+	print clean_lines
+	return clean_lines
+	
 def inverted_index():
 	iindex = collections.defaultdict(set)
 	i = 0
