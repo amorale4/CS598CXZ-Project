@@ -1,5 +1,5 @@
 '''take in sentences, output vector representation of reviews'''
-import random, math
+import random, math, string
 import numpy as np
 import filter_reviews as fr
 
@@ -118,7 +118,43 @@ def getDistanceL1(l1, l2):
 	while cur2 < len(l2):
 		s += l2[cur2][1]
 		cur2 += 1
-	return int(s)
+	return s
+
+def getJaccardSim(l1, l2):
+	s1 = set()
+	s2 = set()
+	for (x, w) in l1[1:]:
+		s1.add(x)
+	for (x, w) in l2[1:]:
+		s2.add(x)
+	n = len(s1.intersection(s2))
+    	return n / float(len(s1) + len(s2) - n) 
+
+def getCosineDistance(l1, l2):
+	(x1, w1) = l1[1]
+	(x2, w2) = l2[1]
+	cur1 = 1
+	cur2 = 1
+	s = 0
+	while cur1 < len(l1) and cur2 < len(l2):
+		x1 = l1[cur1][0]
+		x2 = l2[cur2][0]
+		if x1 < x2:
+			cur1 += 1
+					
+		elif x1 == x2:
+			s += l1[cur1][1]*l2[cur2][1]
+			cur1 += 1
+			cur2 += 1
+		else:
+			cur2 += 1
+	return math.fabs(s)/(get_size(l1)*get_size(l2))
+
+def get_size(l):
+	s = 0
+	for (x,w) in l[1:]:
+		s += w*w
+	return math.sqrt(s)
 
 def reevaluate_centers(mu, clusters):
     newmu = []
@@ -172,11 +208,15 @@ def kNN(center, lst, k):
 	
 def has_converged(mu, oldmu):
 	return (set([tuple(a) for a in mu]) == set([tuple(a) for a in oldmu]))
-				
+
+
+			
 def k_means(X, K):
 	#randomly generate k centers
 	#calculate 
 	clusters = {}
+	if K > len(X):
+		K = len(X)
 	oldmu = random.sample(X, K)
 	mu = random.sample(X, K)
 	i = 0
@@ -210,7 +250,51 @@ def simple_tag_generation(lst):
 			max_cnt = cnt
 	#print max_w, max_cnt
 	return max_w
-		
+
+def removePunc(s):
+	exclude = set(string.punctuation)
+	s = ''.join(ch for ch in s if ch not in exclude)
+	return s
+
+	
+def getTFIDF(clusters):
+	'''TF = {KEY, [1,2,3,4,5]}'''
+	TF = {}
+	IDF = {}
+	TFIDF = {}
+	size = len(clusters)
+	for key, val in clusters.iteritems():
+		temp_set = set()
+		for p in val:
+			for (x, w) in p[1:]:
+				if x not in TF:
+					TF[x] = []
+					for i in range(0, 5):
+						TF[x].append(0)
+				TF[x][key]+=w 
+				temp_set.add(x)
+		for word in list(temp_set):
+			try:
+				IDF[word]+=1
+			except KeyError:
+				IDF[word]=1
+	for x, tf_lst in TF.iteritems():
+		idf = IDF[x]
+		for i in range(0, 5):
+			if x not in TFIDF:
+				TFIDF[x] = []
+				for j in range(0, 5):
+					TFIDF[x].append(0)
+			tf = tf_lst[i]
+			TFIDF[x][i] += tf*math.log((size+1)/(idf+0.5))
+	'''print "TF"
+	print TF
+	print "TFIDF"
+	print TFIDF'''
+	return TFIDF
+
+	
+			 		
 def main_func(filename, sentence_lst):
 	'''lst = [
 	[1, (1, 1), (2, 1)],
@@ -228,15 +312,23 @@ def main_func(filename, sentence_lst):
 	#results = []
 	#print len(mu)
 	tag_to_sentence = {}
+	TF_IDF = getTFIDF(clusters)
 	for key, val in clusters.iteritems():
-		results = []
+		tag = ""
+		for p in val:
+			max_score = -1
+			for (x, w) in p[1:]:
+				score = TF_IDF[x][key]
+				if score >= max_score:
+					tag = location_to_word[x]
+					max_score = score	
+		'''results = []			
 		for p in val:
 			temp = ""
 			for (x, w) in p[1:]:
 				temp = temp + location_to_word[x] + " "
-			#temp += str(p[0])
 			results.append(temp[:-1])
-		tag = simple_tag_generation(results)
+		tag = simple_tag_generation(results)'''
 		#print "CENTER " + str(key)
 		best_ids = kNN(mu[key], val, 3)
 		for bid in best_ids:
@@ -247,6 +339,7 @@ def main_func(filename, sentence_lst):
 				tag_to_sentence[tag].append((ids[0], s))
 			except KeyError:
 				tag_to_sentence[tag] = [(ids[0], s)]
+			
 			#find_original_sentence()
 	for tag, sentences in tag_to_sentence.iteritems():
 		print "TAG="+tag
@@ -270,6 +363,13 @@ def get_review(rid, filename):
 if __name__ == "__main__":
 	retval = fr.filter_contents("data/products/B000SNC70U.txt")
 	main_func(retval[1], retval[0])
+	#d = getCosineDistance([0, (0,1),(2, 2), (3, 5)], [1, (1, 1), (2, 4), (4,1), (5, 1)])
+	#print d
+	'''c = {}
+	c[0] = [[0, (2, 1)], [0, (3, 1)], [0, (3, 2)]]
+	c[1] = [[0, (3, 4)], [0,  (5, 2)]]
+
+	getTFIDF(c)'''
 
 
 
