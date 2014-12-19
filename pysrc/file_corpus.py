@@ -75,13 +75,13 @@ def main(args):
 					
 			elif len(line) > 0:
 				if line[:len(productNam)] == productNam:
-					product_meta.append( line[len(productNam):].strip() )				
+					product_meta.append( line[len(productNam):].strip().replace(",","") )				
 				elif line[:len(productHlp)] == productHlp:		
-					product_meta.append( line[len(productHlp):].strip() )
+					product_meta.append( line[len(productHlp):].strip().replace(",","") )
 				elif line[:len(productScr)] == productScr:		
-					product_meta.append( line[len(productScr):].strip() )
+					product_meta.append( line[len(productScr):].strip().replace(",","") )
 				elif line[:len(productTim)] == productTim:	
-					product_meta.append( line[len(productTim):].strip() )	
+					product_meta.append( line[len(productTim):].strip().replace(",","") )	
 				elif line[:len(productSum)] == productSum:	
 					product_meta.append( line[len(productSum):].strip().replace(",", "" ) )
 				elif line[:len(productRev)] == productRev:		
